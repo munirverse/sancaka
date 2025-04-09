@@ -1,5 +1,5 @@
 {
-  "id": "58c532eb-e8c1-4d92-8b5d-f74a2455be60",
+  "id": "5cbf1b05-4d4a-4bb8-9334-a09f333e3970",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,9 +10,20 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "instances_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
         },
         "name": {
           "name": "name",
@@ -28,9 +39,10 @@
         },
         "status": {
           "name": "status",
-          "type": "varchar(7)",
+          "type": "status",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "interval": {
           "name": "interval",
@@ -48,7 +60,7 @@
           "name": "uptime",
           "type": "numeric(5, 2)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -74,7 +86,16 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.status": {
+      "name": "status",
+      "schema": "public",
+      "values": [
+        "online",
+        "offline"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

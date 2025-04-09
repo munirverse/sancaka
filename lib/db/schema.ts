@@ -3,20 +3,20 @@ import {
   text,
   decimal,
   timestamp,
-  varchar,
+  pgEnum,
   integer,
 } from "drizzle-orm/pg-core";
 
+export const statusEnum = pgEnum("status", ["online", "offline"]);
+
 export const instances = pgTable("instances", {
-  id: text("id").primaryKey(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   url: text("url").notNull(),
-  status: varchar("status", { length: 7 })
-    .notNull()
-    .$type<"online" | "offline">(),
+  status: statusEnum(),
   interval: integer().notNull(),
   responseTime: text("response_time"),
-  uptime: decimal("uptime", { precision: 5, scale: 2 }).notNull(),
+  uptime: decimal("uptime", { precision: 5, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
