@@ -1,0 +1,23 @@
+# Use postgres/example user/password credentials
+version: '3.9'
+
+services:
+
+  db:
+    container_name: sancaka-db
+    image: postgres:16.8-alpine3.20
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    ports:
+      - 5400:5432
+    environment:
+      POSTGRES_USER: sancaka
+      POSTGRES_PASSWORD: sancakapass1234
+      POSTGRES_DB: sancaka

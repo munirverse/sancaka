@@ -30,7 +30,7 @@ const initialInstances: Instance[] = [
     id: "1",
     name: "Authentication Service",
     url: "https://auth.example.com",
-    status: "Warning",
+    status: "Offline",
     interval: "5m",
     responseTime: "450ms",
     uptime: "98.2%",
@@ -145,14 +145,14 @@ export function MonitoringInstancesTable() {
 
     // Remove non-numeric characters for numeric comparisons
     if (sortField === "responseTime" || sortField === "uptime") {
-      aValue = aValue.replace(/[^0-9.]/g, "");
-      bValue = bValue.replace(/[^0-9.]/g, "");
+      aValue = String(aValue || "").replace(/[^0-9.]/g, "");
+      bValue = String(bValue || "").replace(/[^0-9.]/g, "");
     }
 
     if (sortDirection === "asc") {
-      return aValue > bValue ? 1 : -1;
+      return String(aValue || "") > String(bValue || "") ? 1 : -1;
     } else {
-      return aValue < bValue ? 1 : -1;
+      return String(aValue || "") < String(bValue || "") ? 1 : -1;
     }
   });
 
@@ -200,8 +200,6 @@ export function MonitoringInstancesTable() {
         return "text-green-500";
       case "Offline":
         return "text-red-500";
-      case "Warning":
-        return "text-amber-500";
       default:
         return "";
     }
@@ -213,8 +211,6 @@ export function MonitoringInstancesTable() {
         return "bg-green-500";
       case "Offline":
         return "bg-red-500";
-      case "Warning":
-        return "bg-amber-500";
       default:
         return "";
     }
