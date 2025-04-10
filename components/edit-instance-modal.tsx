@@ -37,7 +37,7 @@ export function EditInstanceModal({
   const [formData, setFormData] = useState<Partial<Instance>>({
     name: "",
     url: "",
-    interval: "",
+    interval: 1,
   });
 
   // Update form data when instance changes
@@ -48,7 +48,7 @@ export function EditInstanceModal({
         name: instance.name,
         url: instance.url,
         status: instance.status,
-        interval: instance.interval.replace("m", ""),
+        interval: instance.interval,
         responseTime: instance.responseTime,
         uptime: instance.uptime,
       });
@@ -62,7 +62,7 @@ export function EditInstanceModal({
         ...instance,
         name: formData.name,
         url: formData.url,
-        interval: `${formData.interval}m`,
+        interval: formData.interval,
       });
       onOpenChange(false);
     }
@@ -106,9 +106,9 @@ export function EditInstanceModal({
               Check Interval
             </label>
             <Select
-              value={formData.interval || ""}
+              value={formData.interval?.toString() || "1"}
               onValueChange={(value) =>
-                setFormData({ ...formData, interval: value })
+                setFormData({ ...formData, interval: parseInt(value) })
               }
             >
               <SelectTrigger id="edit-interval">

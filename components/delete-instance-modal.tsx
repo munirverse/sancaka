@@ -25,10 +25,22 @@ export function DeleteInstanceModal({
   onOpenChange,
   onConfirm,
 }: DeleteInstanceModalProps) {
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (instance) {
-      onConfirm(instance.id);
-      onOpenChange(false);
+      try {
+        const response = await fetch(`/api/instances/${instance.id}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete instance");
+        }
+
+        onConfirm(instance.id);
+        onOpenChange(false);
+      } catch (error) {
+        console.error("Error deleting instance:", error);
+      }
     }
   };
 

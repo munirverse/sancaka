@@ -2,8 +2,10 @@ export interface Instance {
   id: string;
   name: string;
   url: string;
-  status: "Online" | "Offline";
-  interval: string;
-  responseTime: string | null;
+  status: "online" | "offline";
+  interval: number;
+  responseTime: string;
   uptime: string;
+  createdAt: string;
+  updatedAt: string;
 }

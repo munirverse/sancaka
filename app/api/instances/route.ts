@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import type { Instance } from "@/types/instance";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { instances } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 // Create a Zod schema for validation
 const createInstanceSchema = z.object({
@@ -16,8 +16,19 @@ const createInstanceSchema = z.object({
 });
 
 // GET /api/instances
-export async function GET() {
-  return NextResponse.json(instances);
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams;
+  const limit = query.get("limit") || "10";
+  const page = query.get("page") || "1";
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+
+  const listInstances = await db
+    .select()
+    .from(instances)
+    .limit(parseInt(limit))
+    .offset(offset);
+
+  return NextResponse.json(listInstances);
 }
 
 // POST /api/instances
@@ -66,28 +77,6 @@ export async function POST(request: NextRequest) {
     console.error("Failed to create instance:", error);
     return NextResponse.json(
       { error: "Failed to create instance" },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT /api/instances
-export async function PUT(request: NextRequest) {
-  try {
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to update instance" },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/instances
-export async function DELETE(request: NextRequest) {
-  try {
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to delete instance" },
       { status: 500 }
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,81 +25,6 @@ import { EditInstanceModal } from "@/components/edit-instance-modal";
 import { DeleteInstanceModal } from "@/components/delete-instance-modal";
 import type { Instance } from "@/types/instance";
 
-const initialInstances: Instance[] = [
-  {
-    id: "1",
-    name: "Authentication Service",
-    url: "https://auth.example.com",
-    status: "Offline",
-    interval: "5m",
-    responseTime: "450ms",
-    uptime: "98.2%",
-  },
-  {
-    id: "2",
-    name: "Database Cluster",
-    url: "https://db.example.com",
-    status: "Offline",
-    interval: "1m",
-    responseTime: null,
-    uptime: "95.7%",
-  },
-  {
-    id: "3",
-    name: "Production API",
-    url: "https://api.example.com",
-    status: "Online",
-    interval: "5m",
-    responseTime: "235ms",
-    uptime: "99.98%",
-  },
-  {
-    id: "4",
-    name: "Staging Environment",
-    url: "https://staging.example.com",
-    status: "Online",
-    interval: "10m",
-    responseTime: "312ms",
-    uptime: "99.5%",
-  },
-  {
-    id: "5",
-    name: "Payment Processing",
-    url: "https://payments.example.com",
-    status: "Offline",
-    interval: "1m",
-    responseTime: null,
-    uptime: "92.3%",
-  },
-  {
-    id: "6",
-    name: "User Dashboard",
-    url: "https://dashboard.example.com",
-    status: "Online",
-    interval: "5m",
-    responseTime: "189ms",
-    uptime: "99.9%",
-  },
-  {
-    id: "7",
-    name: "Content Delivery Network",
-    url: "https://cdn.example.com",
-    status: "Online",
-    interval: "15m",
-    responseTime: "45ms",
-    uptime: "100%",
-  },
-  {
-    id: "8",
-    name: "Email Service",
-    url: "https://email.example.com",
-    status: "Offline",
-    interval: "5m",
-    responseTime: "520ms",
-    uptime: "97.8%",
-  },
-];
-
 type SortField =
   | "name"
   | "url"
@@ -110,7 +35,7 @@ type SortField =
 type SortDirection = "asc" | "desc";
 
 export function MonitoringInstancesTable() {
-  const [instances, setInstances] = useState<Instance[]>(initialInstances);
+  const [instances, setInstances] = useState<Instance[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>("name");
@@ -196,9 +121,9 @@ export function MonitoringInstancesTable() {
 
   const getStatusColor = (status: Instance["status"]) => {
     switch (status) {
-      case "Online":
+      case "online":
         return "text-green-500";
-      case "Offline":
+      case "offline":
         return "text-red-500";
       default:
         return "";
@@ -207,14 +132,24 @@ export function MonitoringInstancesTable() {
 
   const getStatusDot = (status: Instance["status"]) => {
     switch (status) {
-      case "Online":
+      case "online":
         return "bg-green-500";
-      case "Offline":
+      case "offline":
         return "bg-red-500";
       default:
         return "";
     }
   };
+
+  const fetchInstances = async () => {
+    const response = await fetch("/api/instances?page=1&limit=100");
+    const data = await response.json();
+    setInstances(data);
+  };
+
+  useEffect(() => {
+    fetchInstances();
+  }, []);
 
   return (
     <>
