@@ -93,7 +93,7 @@ export async function PUT(
 
     const { name, url, interval } = validationResult.data;
 
-    const updateInstance = { name, url, interval };
+    const updateInstance = { name, url, interval, updatedAt: new Date() };
 
     await db
       .update(instances)

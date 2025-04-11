@@ -11,32 +11,25 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Instance } from "@/types/instance";
+import { useDeleteInstanceMutation } from "@/lib/features/instance/instanceHook";
 
 interface DeleteInstanceModalProps {
   instance: Instance | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (id: string) => void;
 }
 
 export function DeleteInstanceModal({
   instance,
   open,
   onOpenChange,
-  onConfirm,
 }: DeleteInstanceModalProps) {
+  const [deleteInstance] = useDeleteInstanceMutation();
+
   const handleConfirm = async () => {
     if (instance) {
       try {
-        const response = await fetch(`/api/instances/${instance.id}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to delete instance");
-        }
-
-        onConfirm(instance.id);
+        await deleteInstance(instance);
         onOpenChange(false);
       } catch (error) {
         console.error("Error deleting instance:", error);

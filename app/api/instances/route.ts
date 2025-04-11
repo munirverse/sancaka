@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { instances } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 // Create a Zod schema for validation
 const createInstanceSchema = z.object({
@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
     .select()
     .from(instances)
     .limit(parseInt(limit))
-    .offset(offset);
+    .offset(offset)
+    .orderBy(desc(instances.updatedAt));
 
   return NextResponse.json(listInstances);
 }

@@ -20,25 +20,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Instance } from "@/types/instance";
+import { useUpdateInstanceMutation } from "@/lib/features/instance/instanceHook";
 
 interface EditInstanceModalProps {
   instance: Instance | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (updatedInstance: Instance) => void;
 }
 
 export function EditInstanceModal({
   instance,
   open,
   onOpenChange,
-  onSave,
 }: EditInstanceModalProps) {
   const [formData, setFormData] = useState<Partial<Instance>>({
     name: "",
     url: "",
     interval: 1,
   });
+
+  const [updateInstance, { error }] = useUpdateInstanceMutation();
 
   // Update form data when instance changes
   useEffect(() => {
@@ -55,15 +56,18 @@ export function EditInstanceModal({
     }
   }, [instance]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (instance && formData.name && formData.url && formData.interval) {
-      onSave({
-        ...instance,
-        name: formData.name,
-        url: formData.url,
-        interval: formData.interval,
-      });
+      formData.interval = formData.interval.toString();
+
+      await updateInstance(formData as Instance);
+
+      if (error) {
+        console.error("Error updating instance:", error);
+      }
+
       onOpenChange(false);
     }
   };

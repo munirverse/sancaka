@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SuccessAddInstanceModal } from "@/components/success-add-instance-modal";
+import { useAddInstanceMutation } from "@/lib/features/instance/instanceHook";
 
 export function AddMonitoringInstance() {
   const [instanceName, setInstanceName] = useState("");
@@ -24,26 +25,20 @@ export function AddMonitoringInstance() {
     name: string;
     url: string;
   } | null>(null);
+  const [addInstance, { error }] = useAddInstanceMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission
     try {
-      const response = await fetch("/api/instances", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: instanceName,
-          url,
-          interval,
-        }),
+      await addInstance({
+        name: instanceName,
+        url,
+        interval,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create instance");
+      if (error) {
+        console.error("Error creating instance:", error);
       }
 
       // Open success modal

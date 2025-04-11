@@ -3,13 +3,13 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const instanceApi = createApi({
   reducerPath: "instanceApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api/instances" }),
+  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
   tagTypes: ["Instances"],
   endpoints: (builder) => ({
     getInstances: builder.query<Instance[], string>({
       query: (params) => {
         return {
-          url: `${params}`,
+          url: `/instances?${params}`,
           method: "GET",
         };
       },

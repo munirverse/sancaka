@@ -24,6 +24,7 @@ import { Edit, Trash2, ArrowUpDown, Search } from "lucide-react";
 import { EditInstanceModal } from "@/components/edit-instance-modal";
 import { DeleteInstanceModal } from "@/components/delete-instance-modal";
 import type { Instance } from "@/types/instance";
+import { useGetInstancesQuery } from "@/lib/features/instance/instanceHook";
 
 type SortField =
   | "name"
@@ -141,15 +142,11 @@ export function MonitoringInstancesTable() {
     }
   };
 
-  const fetchInstances = async () => {
-    const response = await fetch("/api/instances?page=1&limit=100");
-    const data = await response.json();
-    setInstances(data);
-  };
-
-  useEffect(() => {
-    fetchInstances();
-  }, []);
+  const {
+    data: instancesList,
+    isLoading,
+    error,
+  } = useGetInstancesQuery("&page=1&limit=100");
 
   return (
     <>
@@ -230,8 +227,8 @@ export function MonitoringInstancesTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedInstances.length > 0 ? (
-                  paginatedInstances.map((instance) => (
+                {instancesList && instancesList?.length > 0 ? (
+                  instancesList.map((instance) => (
                     <TableRow key={instance.id}>
                       <TableCell className="font-medium">
                         {instance.name}
