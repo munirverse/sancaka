@@ -17,12 +17,14 @@ interface DeleteInstanceModalProps {
   instance: Instance | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onFinish: () => void;
 }
 
 export function DeleteInstanceModal({
   instance,
   open,
   onOpenChange,
+  onFinish,
 }: DeleteInstanceModalProps) {
   const [deleteInstance] = useDeleteInstanceMutation();
 
@@ -31,6 +33,7 @@ export function DeleteInstanceModal({
       try {
         await deleteInstance(instance);
         onOpenChange(false);
+        onFinish();
       } catch (error) {
         console.error("Error deleting instance:", error);
       }

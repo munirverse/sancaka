@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { instances } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count, like } from "drizzle-orm";
 
 // Create a Zod schema for validation
 const createInstanceSchema = z.object({
@@ -21,15 +21,39 @@ export async function GET(request: NextRequest) {
   const limit = query.get("limit") || "10";
   const page = query.get("page") || "1";
   const offset = (parseInt(page) - 1) * parseInt(limit);
+  const search = query.get("q") || "";
 
-  const listInstances = await db
-    .select()
-    .from(instances)
+  const instancesQuery = db.select().from(instances);
+
+  if (search) {
+    instancesQuery.where(like(instances.name, `%${search}%`));
+  }
+
+  const listInstances = await instancesQuery
     .limit(parseInt(limit))
     .offset(offset)
     .orderBy(desc(instances.updatedAt));
 
-  return NextResponse.json(listInstances);
+  const totalInstances = await db.select({ count: count() }).from(instances);
+
+  const total = totalInstances[0].count;
+
+  const totalPages = Math.ceil(total / parseInt(limit));
+
+  const response = {
+    message: "Instances fetched successfully",
+    data: {
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages,
+      },
+      list: listInstances,
+    },
+  };
+
+  return NextResponse.json(response);
 }
 
 // POST /api/instances

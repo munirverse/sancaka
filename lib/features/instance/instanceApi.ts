@@ -1,4 +1,4 @@
-import { Instance } from "@/types/instance";
+import { Instance, InstanceResponse } from "@/types/instance";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const instanceApi = createApi({
@@ -6,7 +6,7 @@ export const instanceApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
   tagTypes: ["Instances"],
   endpoints: (builder) => ({
-    getInstances: builder.query<Instance[], string>({
+    getInstances: builder.query<InstanceResponse["data"], string>({
       query: (params) => {
         return {
           url: `/instances?${params}`,
@@ -14,8 +14,9 @@ export const instanceApi = createApi({
         };
       },
       providesTags: ["Instances"],
+      transformResponse: (response: InstanceResponse) => response.data,
     }),
-    addInstance: builder.mutation<Instance, Instance>({
+    addInstance: builder.mutation<Partial<Instance>, Instance>({
       query: (instance) => ({
         url: "/instances",
         method: "POST",
@@ -23,7 +24,7 @@ export const instanceApi = createApi({
       }),
       invalidatesTags: ["Instances"],
     }),
-    updateInstance: builder.mutation<Instance, Instance>({
+    updateInstance: builder.mutation<Partial<Instance>, Instance>({
       query: (instance) => ({
         url: `/instances/${instance.id}`,
         method: "PUT",
@@ -31,7 +32,7 @@ export const instanceApi = createApi({
       }),
       invalidatesTags: ["Instances"],
     }),
-    deleteInstance: builder.mutation<Instance, Instance>({
+    deleteInstance: builder.mutation<Partial<Instance>, Instance>({
       query: (instance) => ({
         url: `/instances/${instance.id}`,
         method: "DELETE",

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import qs from "querystring";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,78 +26,18 @@ import { EditInstanceModal } from "@/components/edit-instance-modal";
 import { DeleteInstanceModal } from "@/components/delete-instance-modal";
 import type { Instance } from "@/types/instance";
 import { useGetInstancesQuery } from "@/lib/features/instance/instanceHook";
-
-type SortField =
-  | "name"
-  | "url"
-  | "status"
-  | "interval"
-  | "responseTime"
-  | "uptime";
-type SortDirection = "asc" | "desc";
+import { debounced } from "@/lib/utils";
 
 export function MonitoringInstancesTable() {
-  const [instances, setInstances] = useState<Instance[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermQuery, setSearchTermQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState<SortField>("name");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
   // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedInstance, setSelectedInstance] = useState<Instance | null>(
     null
   );
-
-  const itemsPerPage = 5;
-
-  // Handle search
-  const filteredInstances = instances.filter(
-    (instance) =>
-      instance.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      instance.url.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Handle sorting
-  const sortedInstances = [...filteredInstances].sort((a, b) => {
-    let aValue = a[sortField];
-    let bValue = b[sortField];
-
-    // Handle null values for responseTime
-    if (sortField === "responseTime") {
-      aValue = a.responseTime || "0ms";
-      bValue = b.responseTime || "0ms";
-    }
-
-    // Remove non-numeric characters for numeric comparisons
-    if (sortField === "responseTime" || sortField === "uptime") {
-      aValue = String(aValue || "").replace(/[^0-9.]/g, "");
-      bValue = String(bValue || "").replace(/[^0-9.]/g, "");
-    }
-
-    if (sortDirection === "asc") {
-      return String(aValue || "") > String(bValue || "") ? 1 : -1;
-    } else {
-      return String(aValue || "") < String(bValue || "") ? 1 : -1;
-    }
-  });
-
-  // Handle pagination
-  const totalPages = Math.ceil(sortedInstances.length / itemsPerPage);
-  const paginatedInstances = sortedInstances.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
 
   const handleEdit = (instance: Instance) => {
     setSelectedInstance(instance);
@@ -108,16 +49,26 @@ export function MonitoringInstancesTable() {
     setDeleteModalOpen(true);
   };
 
-  const handleSaveEdit = (updatedInstance: Instance) => {
-    setInstances(
-      instances.map((instance) =>
-        instance.id === updatedInstance.id ? updatedInstance : instance
-      )
-    );
+  const handleSearchTermChange = (value: string) => {
+    setSearchTerm(value);
+    debounced(() => {
+      setSearchTermQuery(value);
+      setCurrentPage(1);
+    })();
   };
 
-  const handleConfirmDelete = (id: string) => {
-    setInstances(instances.filter((instance) => instance.id !== id));
+  const handleOnFinishEdit = () => {
+    setSelectedInstance(null);
+    setCurrentPage(1);
+    setSearchTermQuery("");
+    setSearchTerm("");
+  };
+
+  const handleOnFinishDelete = () => {
+    setSelectedInstance(null);
+    setCurrentPage(1);
+    setSearchTermQuery("");
+    setSearchTerm("");
   };
 
   const getStatusColor = (status: Instance["status"]) => {
@@ -142,11 +93,9 @@ export function MonitoringInstancesTable() {
     }
   };
 
-  const {
-    data: instancesList,
-    isLoading,
-    error,
-  } = useGetInstancesQuery("&page=1&limit=100");
+  const { data } = useGetInstancesQuery(
+    qs.stringify({ page: currentPage, limit: 5, q: searchTermQuery })
+  );
 
   return (
     <>
@@ -159,7 +108,7 @@ export function MonitoringInstancesTable() {
               <Input
                 placeholder="Search instances..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchTermChange(e.target.value)}
                 className="pl-8 w-full sm:w-[250px]"
               />
             </div>
@@ -169,66 +118,18 @@ export function MonitoringInstancesTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("name")}
-                      className="flex items-center p-0 h-auto font-medium"
-                    >
-                      Name <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("url")}
-                      className="flex items-center p-0 h-auto font-medium"
-                    >
-                      URL <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("status")}
-                      className="flex items-center p-0 h-auto font-medium"
-                    >
-                      Status <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("interval")}
-                      className="flex items-center p-0 h-auto font-medium"
-                    >
-                      Interval <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("responseTime")}
-                      className="flex items-center p-0 h-auto font-medium"
-                    >
-                      Response Time <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleSort("uptime")}
-                      className="flex items-center p-0 h-auto font-medium"
-                    >
-                      Uptime % <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
+                  <TableHead className="w-[200px]">Name</TableHead>
+                  <TableHead>URL</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Interval</TableHead>
+                  <TableHead>Response Time</TableHead>
+                  <TableHead>Uptime %</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {instancesList && instancesList?.length > 0 ? (
-                  instancesList.map((instance) => (
+                {data?.list && data?.list?.length > 0 ? (
+                  data.list.map((instance) => (
                     <TableRow key={instance.id}>
                       <TableCell className="font-medium">
                         {instance.name}
@@ -285,7 +186,7 @@ export function MonitoringInstancesTable() {
             </Table>
           </div>
 
-          {totalPages > 1 && (
+          {(data?.pagination?.totalPages || 0) > 1 && (
             <Pagination className="mt-4">
               <PaginationContent>
                 <PaginationItem>
@@ -299,7 +200,9 @@ export function MonitoringInstancesTable() {
                   />
                 </PaginationItem>
 
-                {Array.from({ length: totalPages }).map((_, i) => (
+                {Array.from({
+                  length: data?.pagination?.totalPages || 0,
+                }).map((_, i) => (
                   <PaginationItem key={i}>
                     <PaginationLink
                       onClick={() => setCurrentPage(i + 1)}
@@ -313,10 +216,12 @@ export function MonitoringInstancesTable() {
                 <PaginationItem>
                   <PaginationNext
                     onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      setCurrentPage((prev) =>
+                        Math.min(prev + 1, data?.pagination?.totalPages || 0)
+                      )
                     }
                     className={
-                      currentPage === totalPages
+                      currentPage === (data?.pagination?.totalPages || 0)
                         ? "pointer-events-none opacity-50"
                         : ""
                     }
@@ -333,7 +238,7 @@ export function MonitoringInstancesTable() {
         instance={selectedInstance}
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
-        onSave={handleSaveEdit}
+        onFinish={handleOnFinishEdit}
       />
 
       {/* Delete Modal */}
@@ -341,7 +246,7 @@ export function MonitoringInstancesTable() {
         instance={selectedInstance}
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
-        onConfirm={handleConfirmDelete}
+        onFinish={handleOnFinishDelete}
       />
     </>
   );

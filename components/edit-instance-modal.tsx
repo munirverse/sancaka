@@ -26,12 +26,14 @@ interface EditInstanceModalProps {
   instance: Instance | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onFinish: () => void;
 }
 
 export function EditInstanceModal({
   instance,
   open,
   onOpenChange,
+  onFinish,
 }: EditInstanceModalProps) {
   const [formData, setFormData] = useState<Partial<Instance>>({
     name: "",
@@ -69,6 +71,7 @@ export function EditInstanceModal({
       }
 
       onOpenChange(false);
+      onFinish();
     }
   };
 
