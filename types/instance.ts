@@ -1,3 +1,5 @@
+import type { Queue } from "bull";
+
 export interface Instance {
   id: string;
   name: string;
@@ -21,4 +23,12 @@ export interface InstanceResponse {
     };
     list: Instance[];
   };
+}
+
+export interface CheckInstanceQueueData {
+  instanceId: string;
+  name: string;
+  url: string;
+  interval: number;
+  jobs?: Queue;
 }

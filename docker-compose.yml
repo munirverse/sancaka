@@ -10,14 +10,34 @@ services:
     # set shared memory limit when using docker-compose
     shm_size: 128mb
     # or set shared memory limit when deploy via swarm stack
-    #volumes:
-    #  - type: tmpfs
-    #    target: /dev/shm
-    #    tmpfs:
-    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    volumes:
+      - ./volumes/sancaka-db:/var/lib/postgresql/data
     ports:
       - 5400:5432
     environment:
       POSTGRES_USER: sancaka
       POSTGRES_PASSWORD: sancakapass1234
       POSTGRES_DB: sancaka
+
+  redis:
+    container_name: sancaka-redis
+    image: redis:8.0-rc1-alpine
+    restart: always
+    ports:
+      - 6300:6379
+    networks:
+      - sancaka-network
+
+  subscriber:
+    build:
+      context: .
+      dockerfile: ./subscriber/Dockerfile
+    container_name: sancaka-subscriber
+    depends_on:
+      - redis
+    networks:
+      - sancaka-network
+
+networks:
+  sancaka-network:
+    driver: bridge

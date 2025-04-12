@@ -3,7 +3,8 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { instances } from "@/lib/db/schema";
-import { eq, desc, count, like } from "drizzle-orm";
+import { desc, count, like } from "drizzle-orm";
+import { publish } from "@/lib/pubsub/check-instance";
 
 // Create a Zod schema for validation
 const createInstanceSchema = z.object({
@@ -73,14 +74,28 @@ export async function POST(request: NextRequest) {
 
     const { name, url, interval } = validationResult.data;
 
+    let status: "online" | "offline" = "offline";
+
+    const instanceStartTime = performance.now();
+
+    try {
+      const instanceResponse = await fetch(url);
+
+      if (instanceResponse.ok && instanceResponse.status === 200) {
+        status = "online";
+      }
+    } catch (error) {
+      status = "offline";
+    }
+
     // Create new instance with default values
     const newInstance = {
       name,
       url,
-      status: "offline" as const,
+      status,
       interval,
-      responseTime: "0ms", // Note: using snake_case for DB column
-      uptime: "0.0",
+      responseTime: `${Math.round(performance.now() - instanceStartTime)}ms`,
+      uptime: status === "online" ? "100" : "0",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -90,6 +105,14 @@ export async function POST(request: NextRequest) {
       .insert(instances)
       .values(newInstance)
       .returning();
+
+    // publish the instance to the queue
+    publish({
+      instanceId: inserted.id.toString(),
+      name: inserted.name,
+      url: inserted.url,
+      interval: inserted.interval,
+    });
 
     // Transform the response to match your API format
     const response = {
