@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { instances } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { instances, instanceStatusHistory } from "@/lib/db/schema";
+import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
 
 const updateInstanceSchema = z.object({
@@ -93,7 +93,48 @@ export async function PUT(
 
     const { name, url, interval } = validationResult.data;
 
-    const updateInstance = { name, url, interval, updatedAt: new Date() };
+    let status: "online" | "offline" = "offline";
+
+    const instanceStartTime = performance.now();
+
+    try {
+      const instanceResponse = await fetch(url);
+      if (instanceResponse.ok && instanceResponse.status === 200) {
+        status = "online";
+      }
+    } catch (error) {
+      status = "offline";
+    }
+
+    await db.insert(instanceStatusHistory).values({
+      instanceId: parseInt(id),
+      online: status === "online",
+    });
+
+    const [{ count: onlineHistoryCount }] = await db
+      .select({ count: count() })
+      .from(instanceStatusHistory)
+      .where(
+        and(
+          eq(instanceStatusHistory.instanceId, parseInt(id)),
+          eq(instanceStatusHistory.online, true)
+        )
+      );
+
+    const [{ count: totalHistoryCount }] = await db
+      .select({ count: count() })
+      .from(instanceStatusHistory)
+      .where(eq(instanceStatusHistory.instanceId, parseInt(id)));
+
+    const updateInstance = {
+      name,
+      url,
+      interval,
+      status,
+      responseTime: `${Math.round(performance.now() - instanceStartTime)}ms`,
+      uptime: ((onlineHistoryCount / totalHistoryCount) * 100).toFixed(2),
+      updatedAt: new Date(),
+    };
 
     await db
       .update(instances)

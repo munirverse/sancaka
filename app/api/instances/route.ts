@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { instances } from "@/lib/db/schema";
+import { instances, instanceStatusHistory } from "@/lib/db/schema";
 import { desc, count, like } from "drizzle-orm";
 import { publish } from "@/lib/pubsub/check-instance";
 
@@ -84,9 +84,7 @@ export async function POST(request: NextRequest) {
       if (instanceResponse.ok && instanceResponse.status === 200) {
         status = "online";
       }
-    } catch (error) {
-      status = "offline";
-    }
+    } catch (error) {}
 
     // Create new instance with default values
     const newInstance = {
@@ -105,6 +103,11 @@ export async function POST(request: NextRequest) {
       .insert(instances)
       .values(newInstance)
       .returning();
+
+    await db.insert(instanceStatusHistory).values({
+      instanceId: inserted.id,
+      online: status === "online",
+    });
 
     // publish the instance to the queue
     publish({
