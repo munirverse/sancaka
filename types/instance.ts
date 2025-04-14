@@ -27,8 +27,5 @@ export interface InstanceResponse {
 
 export interface CheckInstanceQueueData {
   instanceId: string;
-  name: string;
-  url: string;
   interval: number;
-  jobs?: Queue;
 }

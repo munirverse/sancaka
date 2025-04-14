@@ -112,8 +112,6 @@ export async function POST(request: NextRequest) {
     // publish the instance to the queue
     publish({
       instanceId: inserted.id.toString(),
-      name: inserted.name,
-      url: inserted.url,
       interval: inserted.interval,
     });
 

@@ -7,7 +7,5 @@ export function publish(data: CheckInstanceQueueData) {
 
   const queue = new Queue("check-instance", config.redis.url!);
 
-  data.jobs = queue;
-
-  queue.add(data, { delay: data.interval * 1000 });
+  queue.add({ instanceId: data.instanceId }, { delay: data.interval * 1000 });
 }
