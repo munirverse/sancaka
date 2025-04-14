@@ -93,6 +93,16 @@ export function MonitoringInstancesTable() {
     }
   };
 
+  const getIntervalFormat = (interval: number) => {
+    if (interval >= 3600) {
+      return `${interval / 3600} hour`;
+    } else if (interval > 60) {
+      return `${interval / 60} minutes`;
+    } else {
+      return `${interval} seconds`;
+    }
+  };
+
   const { data } = useGetInstancesQuery(
     qs.stringify({ page: currentPage, limit: 5, q: searchTermQuery })
   );
@@ -147,7 +157,9 @@ export function MonitoringInstancesTable() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>{instance.interval}</TableCell>
+                      <TableCell>
+                        {getIntervalFormat(Number(instance.interval))}
+                      </TableCell>
                       <TableCell>{instance.responseTime || "-"}</TableCell>
                       <TableCell>{instance.uptime}</TableCell>
                       <TableCell className="text-right">

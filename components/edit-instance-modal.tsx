@@ -38,7 +38,7 @@ export function EditInstanceModal({
   const [formData, setFormData] = useState<Partial<Instance>>({
     name: "",
     url: "",
-    interval: 1,
+    interval: 300,
   });
 
   const [updateInstance, { error }] = useUpdateInstanceMutation();
@@ -122,12 +122,15 @@ export function EditInstanceModal({
                 <SelectValue placeholder="Select interval" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Every 1 minute</SelectItem>
-                <SelectItem value="5">Every 5 minutes</SelectItem>
-                <SelectItem value="10">Every 10 minutes</SelectItem>
-                <SelectItem value="15">Every 15 minutes</SelectItem>
-                <SelectItem value="30">Every 30 minutes</SelectItem>
-                <SelectItem value="60">Every 1 hour</SelectItem>
+                <SelectItem value="10">Every 10 seconds</SelectItem>
+                <SelectItem value="15">Every 15 seconds</SelectItem>
+                <SelectItem value="30">Every 30 seconds</SelectItem>
+                <SelectItem value="60">Every 1 minute</SelectItem>
+                <SelectItem value="300">Every 5 minutes</SelectItem>
+                <SelectItem value="600">Every 10 minutes</SelectItem>
+                <SelectItem value="900">Every 15 minutes</SelectItem>
+                <SelectItem value="1800">Every 30 minutes</SelectItem>
+                <SelectItem value="3600">Every 1 hour</SelectItem>
               </SelectContent>
             </Select>
           </div>
