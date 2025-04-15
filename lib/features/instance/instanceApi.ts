@@ -1,5 +1,6 @@
 import { Instance, InstanceResponse } from "@/types/instance";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { statsApi } from "../stats/statsApi";
 
 export const instanceApi = createApi({
   reducerPath: "instanceApi",
@@ -23,6 +24,9 @@ export const instanceApi = createApi({
         body: instance,
       }),
       invalidatesTags: ["Instances"],
+      onQueryStarted(_, { dispatch }) {
+        dispatch(statsApi.util.invalidateTags(["Stats"]));
+      },
     }),
     updateInstance: builder.mutation<Partial<Instance>, Partial<Instance>>({
       query: (instance) => ({
@@ -31,6 +35,9 @@ export const instanceApi = createApi({
         body: instance,
       }),
       invalidatesTags: ["Instances"],
+      onQueryStarted(_, { dispatch }) {
+        dispatch(statsApi.util.invalidateTags(["Stats"]));
+      },
     }),
     deleteInstance: builder.mutation<Partial<Instance>, Partial<Instance>>({
       query: (instance) => ({
@@ -38,6 +45,9 @@ export const instanceApi = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["Instances"],
+      onQueryStarted(_, { dispatch }) {
+        dispatch(statsApi.util.invalidateTags(["Stats"]));
+      },
     }),
   }),
 });

@@ -1,0 +1,1 @@
+export { useGetStatsQuery } from "./statsApi";
