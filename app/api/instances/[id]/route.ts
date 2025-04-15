@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { instances, instanceStatusHistory } from "@/lib/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
+import { flushQueue } from "@/lib/pubsub/check-instance";
 
 const updateInstanceSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -40,7 +41,11 @@ export async function DELETE(
       );
     }
 
+    // Delete the instance
     await db.delete(instances).where(eq(instances.id, parseInt(id)));
+
+    // Flush the queue for the instance
+    await flushQueue(id);
 
     return NextResponse.json({ message: "Instance deleted" }, { status: 200 });
   } catch (error) {
