@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
-import { instances, instanceStatusHistory } from "@/lib/db/schema";
-import { count, sum, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { instances } from "@/lib/db/schema";
+import { count, sum, eq, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -38,10 +38,27 @@ export async function GET() {
       ((totalOnlineInstances / totalInstances) * 100).toFixed(2)
     );
 
+    const instanceWithGroupHistory = await db.execute(sql`
+      SELECT
+        instances.id,
+        instances.name,
+        instances.status,
+        instances.uptime,
+        instances.response_time as responseTime,
+        JSON_AGG(
+          case when instanceStatusHistory.online is not false then 1 else 0 end
+        ) AS history
+      FROM  instances
+      LEFT JOIN instance_status_history instanceStatusHistory ON instances.id = instanceStatusHistory.instance_id
+      GROUP BY instances.id
+      ORDER BY instances.updated_at DESC
+    `);
+
     const response = {
       message: "Stats fetched successfully",
       data: {
         overview,
+        instances: instanceWithGroupHistory.rows || [],
       },
     };
 

@@ -1,80 +1,28 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { StatsResponse } from "@/types/stats";
 import { Activity, Wifi, WifiOff } from "lucide-react";
 
-interface ServiceData {
-  name: string;
-  uptime: string;
-  duration: string;
-  responseTime: string;
-  status: "Online" | "Offline";
-  uptimeGraph: number[];
+interface ServiceCardsProps {
+  instances?: StatsResponse["data"]["instances"];
 }
 
-const services: ServiceData[] = [
-  {
-    name: "Main Website",
-    uptime: "99.98%",
-    duration: "43m",
-    responseTime: "187 ms",
-    status: "Online",
-    uptimeGraph: Array(30).fill(1),
-  },
-  {
-    name: "API Gateway",
-    uptime: "99.95%",
-    duration: "4h",
-    responseTime: "210 ms",
-    status: "Online",
-    uptimeGraph: Array(30).fill(1),
-  },
-  {
-    name: "Database Cluster",
-    uptime: "99.99%",
-    duration: "4h",
-    responseTime: "45 ms",
-    status: "Online",
-    uptimeGraph: Array(30).fill(1),
-  },
-  {
-    name: "Authentication Service",
-    uptime: "70%",
-    duration: "4h",
-    responseTime: "1250 ms",
-    status: "Offline",
-    uptimeGraph: [...Array(25).fill(1), ...Array(5).fill(0)],
-  },
-  {
-    name: "Payment Gateway",
-    uptime: "50%",
-    duration: "4h",
-    responseTime: "320 ms",
-    status: "Offline",
-    uptimeGraph: [...Array(15).fill(1), ...Array(15).fill(0)],
-  },
-  {
-    name: "Storage Service",
-    uptime: "99.97%",
-    duration: "43h",
-    responseTime: "95 ms",
-    status: "Online",
-    uptimeGraph: Array(30).fill(1),
-  },
-];
+type ServiceData = StatsResponse["data"]["instances"][number];
 
-export function ServiceCards() {
+export function ServiceCards({ instances: services }: ServiceCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {services.map((service) => (
-        <ServiceCard key={service.name} service={service} />
-      ))}
+      {services?.length &&
+        services.map((service) => (
+          <ServiceCard key={service.name} service={service} />
+        ))}
     </div>
   );
 }
 
 function ServiceCard({ service }: { service: ServiceData }) {
-  const isOnline = service.status === "Online";
+  const isOnline = service.status === "online";
 
   return (
     <Card>
@@ -104,14 +52,13 @@ function ServiceCard({ service }: { service: ServiceData }) {
                 isOnline ? "text-green-500" : "text-red-500"
               }`}
             >
-              {service.uptime}
+              {service.uptime}%
             </p>
-            <p className="text-sm text-muted-foreground">now</p>
           </div>
         </div>
 
         <div className="flex items-center space-x-1 mb-4 h-2">
-          {service.uptimeGraph.map((status, i) => (
+          {service.history.slice(0, 15).map((status, i) => (
             <div
               key={i}
               className={`h-2 w-full rounded-sm ${

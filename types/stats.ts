@@ -9,5 +9,13 @@ export interface StatsResponse {
       };
       healthScore: number;
     };
+    instances: {
+      id: string;
+      name: string;
+      status: string;
+      uptime: number;
+      history: number[];
+      responseTime: string;
+    }[];
   };
 }
