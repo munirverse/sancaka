@@ -15,7 +15,7 @@ export interface StatsResponse {
       status: string;
       uptime: number;
       history: number[];
-      responseTime: string;
+      responsetime: string;
     }[];
   };
 }

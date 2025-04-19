@@ -58,7 +58,7 @@ function ServiceCard({ service }: { service: ServiceData }) {
         </div>
 
         <div className="flex items-center space-x-1 mb-4 h-2">
-          {service.history.slice(0, 15).map((status, i) => (
+          {service.history.map((status, i) => (
             <div
               key={i}
               className={`h-2 w-full rounded-sm ${
@@ -73,7 +73,7 @@ function ServiceCard({ service }: { service: ServiceData }) {
             <Activity className="h-4 w-4 text-muted-foreground" />
             <p className="text-sm">Response Time</p>
           </div>
-          <p className="text-right font-medium">{service.responseTime}</p>
+          <p className="text-right font-medium">{service.responsetime}</p>
 
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-muted-foreground" />

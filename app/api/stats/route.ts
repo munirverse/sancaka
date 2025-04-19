@@ -39,19 +39,25 @@ export async function GET() {
     );
 
     const instanceWithGroupHistory = await db.execute(sql`
-      SELECT
+     SELECT
         instances.id,
         instances.name,
         instances.status,
         instances.uptime,
-        instances.response_time as responseTime,
+        instances.response_time AS responseTime,
         JSON_AGG(
-          case when instanceStatusHistory.online is not false then 1 else 0 end
+          CASE WHEN h.online IS NOT false THEN 1 ELSE 0 END ORDER BY h.created_at DESC
         ) AS history
-      FROM  instances
-      LEFT JOIN instance_status_history instanceStatusHistory ON instances.id = instanceStatusHistory.instance_id
+      FROM instances
+      LEFT JOIN LATERAL (
+        SELECT *
+        FROM instance_status_history
+        WHERE instance_status_history.instance_id = instances.id
+        ORDER BY instance_status_history.created_at DESC
+        LIMIT 20
+      ) h ON true
       GROUP BY instances.id
-      ORDER BY instances.updated_at DESC
+      ORDER BY instances.created_at DESC;
     `);
 
     const response = {
