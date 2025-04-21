@@ -7,6 +7,7 @@ import { AddMonitoringInstance } from "@/components/add-monitoring-instance";
 import { MonitoringInstancesTable } from "@/components/monitoring-instances-table";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useGetStatsQuery } from "@/lib/features/stats/statsHook";
+import { AccountNavigation } from "@/components/account-navigation";
 
 export default function DashboardPage() {
   const { data: stats } = useGetStatsQuery("", {
@@ -22,6 +23,7 @@ export default function DashboardPage() {
           <ModeToggle />
         </div>
       </header>
+      <AccountNavigation />
       <main className="container py-6">
         <Tabs defaultValue="uptime">
           <TabsList className="mb-6 bg-muted/50">
