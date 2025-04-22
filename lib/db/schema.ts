@@ -6,7 +6,6 @@ import {
   pgEnum,
   integer,
   boolean,
-  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["online", "offline"]);
@@ -30,4 +29,12 @@ export const instanceStatusHistory = pgTable("instance_status_history", {
     .references(() => instances.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const users = pgTable("users", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  username: text("username").notNull(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
