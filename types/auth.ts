@@ -7,3 +7,8 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
 }
+
+export interface AuthPayload {
+  username: string;
+  password: string;
+}

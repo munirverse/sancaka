@@ -16,3 +16,6 @@ export const useAuthDispatch = () => {
       dispatch(setIsAuthenticated(isAuthenticated)),
   };
 };
+
+// export all the hooks from the authApi
+export { useSignUpMutation } from "./authApi";
