@@ -12,3 +12,10 @@ export interface AuthPayload {
   username: string;
   password: string;
 }
+
+export interface AuthApiResponse {
+  token: string;
+  user: {
+    username: string;
+  };
+}
