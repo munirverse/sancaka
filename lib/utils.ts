@@ -43,3 +43,33 @@ export async function verifyAuthToken(token: string) {
     return null;
   }
 }
+
+export const loadLocalStorage = () => {
+  try {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const serializedState = localStorage.getItem("persist:root");
+    if (!serializedState) {
+      return undefined;
+    }
+    return JSON.parse(serializedState);
+  } catch (error) {
+    console.error("Error loading local storage:", error);
+    return undefined;
+  }
+};
+
+export const saveLocalStorage = (state: any) => {
+  try {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem("persist:root", serializedState);
+  } catch (error) {
+    console.error("Error saving to local storage:", error);
+  }
+};

@@ -21,6 +21,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLoginMutation } from "@/lib/features/auth/authApi";
 import { AuthApiResponse } from "@/types/auth";
+import { useAuthDispatch } from "@/lib/features/auth/authHook";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [login] = useLoginMutation();
+  const { setToken, setUser, setIsAuthenticated } = useAuthDispatch();
 
   const resetErrorMessage = () => {
     setError("");
@@ -59,10 +61,17 @@ export default function LoginPage() {
           throw err;
         });
 
-      if (!response!?.token) {
+      if (!response!?.token && !response!?.user?.username) {
         handleError("Invalid username or password");
         return;
       }
+
+      // @ts-ignore
+      setToken(response.token);
+      // @ts-ignore
+      setUser({ username: response.user.username });
+      setIsAuthenticated(true);
+      setIsLoading(false);
 
       router.push("/");
     } catch (_) {
