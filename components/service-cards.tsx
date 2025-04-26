@@ -13,16 +13,22 @@ type ServiceData = StatsResponse["data"]["instances"][number];
 export function ServiceCards({ instances: services }: ServiceCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {services?.length &&
-        services.map((service) => (
-          <ServiceCard key={service.name} service={service} />
-        ))}
+      {services?.length
+        ? services.map((service) => (
+            <ServiceCard key={service.name} service={service} />
+          ))
+        : null}
     </div>
   );
 }
 
 function ServiceCard({ service }: { service: ServiceData }) {
   const isOnline = service.status === "online";
+
+  const historyRoundColor = (historyNumber: number | null) => {
+    if (historyNumber === null) return "bg-gray-200";
+    return historyNumber ? "bg-green-500" : "bg-red-500";
+  };
 
   return (
     <Card>
@@ -61,9 +67,7 @@ function ServiceCard({ service }: { service: ServiceData }) {
           {service.history.map((status, i) => (
             <div
               key={i}
-              className={`h-2 w-full rounded-sm ${
-                status ? "bg-green-500" : "bg-red-500"
-              }`}
+              className={`h-2 w-full rounded-sm ${historyRoundColor(status)}`}
             />
           ))}
         </div>

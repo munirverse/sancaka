@@ -8,12 +8,15 @@ import { MonitoringInstancesTable } from "@/components/monitoring-instances-tabl
 import { ModeToggle } from "@/components/mode-toggle";
 import { useGetStatsQuery } from "@/lib/features/stats/statsHook";
 import { AccountNavigation } from "@/components/account-navigation";
+import { useAuthSelector } from "@/lib/features/auth/authHook";
 
 export default function DashboardPage() {
   const { data: stats } = useGetStatsQuery("", {
     pollingInterval: 3000,
     skipPollingIfUnfocused: true,
   });
+
+  const { isAuthenticated } = useAuthSelector();
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,20 +27,24 @@ export default function DashboardPage() {
         </div>
       </header>
       <AccountNavigation />
-      <main className="container py-6">
+      <main className="container py-1">
         <Tabs defaultValue="uptime">
-          <TabsList className="mb-6 bg-muted/50">
+          <TabsList className="mb-4 bg-muted/50">
             <TabsTrigger value="uptime">Uptime</TabsTrigger>
-            <TabsTrigger value="instances">Instances</TabsTrigger>
+            {isAuthenticated && (
+              <TabsTrigger value="instances">Instances</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="uptime" className="space-y-6">
             <DashboardOverview overview={stats?.overview} />
             <ServiceCards instances={stats?.instances} />
           </TabsContent>
-          <TabsContent value="instances" className="space-y-6">
-            <AddMonitoringInstance />
-            <MonitoringInstancesTable />
-          </TabsContent>
+          {isAuthenticated && (
+            <TabsContent value="instances" className="space-y-6">
+              <AddMonitoringInstance />
+              <MonitoringInstancesTable />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>

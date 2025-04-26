@@ -12,7 +12,6 @@ export function DashboardOverview({ overview }: DashboardOverviewProps) {
   return (
     <Card>
       <CardContent className="p-6">
-        <h2 className="text-lg font-semibold mb-6">Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <p className="text-sm text-muted-foreground mb-1">Overall Uptime</p>

@@ -60,11 +60,23 @@ export async function GET() {
       ORDER BY instances.created_at DESC;
     `);
 
+    const instancesHistory = instanceWithGroupHistory.rows.map((instance) => {
+      return {
+        ...instance,
+        history: [
+          ...Array(
+            Math.max(0, 20 - (instance.history as number[]).length)
+          ).fill(null),
+          ...(instance.history as number[]).reverse(),
+        ],
+      };
+    });
+
     const response = {
       message: "Stats fetched successfully",
       data: {
         overview,
-        instances: instanceWithGroupHistory.rows || [],
+        instances: instancesHistory || [],
       },
     };
 
