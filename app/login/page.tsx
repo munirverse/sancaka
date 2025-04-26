@@ -61,15 +61,15 @@ export default function LoginPage() {
           throw err;
         });
 
-      if (!response!?.token && !response!?.user?.username) {
+      const { token, user } = response! || { token: null, user: null };
+
+      if (!token || !user?.username) {
         handleError("Invalid username or password");
         return;
       }
 
-      // @ts-ignore
-      setToken(response.token);
-      // @ts-ignore
-      setUser({ username: response.user.username });
+      setToken(token);
+      setUser({ username: user.username });
       setIsAuthenticated(true);
       setIsLoading(false);
 

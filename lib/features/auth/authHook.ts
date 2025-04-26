@@ -10,8 +10,8 @@ export const useAuthDispatch = () => {
   const dispatch = useDispatch.withTypes<AppDispatch>()();
 
   return {
-    setUser: (user: User) => dispatch(setUser(user)),
-    setToken: (token: string) => dispatch(setToken(token)),
+    setUser: (user: User | null) => dispatch(setUser(user)),
+    setToken: (token: string | null) => dispatch(setToken(token)),
     setIsAuthenticated: (isAuthenticated: boolean) =>
       dispatch(setIsAuthenticated(isAuthenticated)),
   };
