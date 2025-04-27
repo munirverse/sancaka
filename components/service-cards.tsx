@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { StatsResponse } from "@/types/stats";
 import { Activity, Wifi, WifiOff } from "lucide-react";
+import { getIntervalFormat } from "@/lib/utils";
 
 interface ServiceCardsProps {
   instances?: StatsResponse["data"]["instances"];
@@ -51,7 +52,9 @@ function ServiceCard({ service }: { service: ServiceData }) {
         </div>
 
         <div className="mb-2">
-          <p className="text-sm text-muted-foreground">Uptime</p>
+          <p className="text-sm text-muted-foreground">
+            Uptime {`(${getIntervalFormat(service.interval)})`}
+          </p>
           <div className="flex justify-between items-center">
             <p
               className={`font-semibold ${

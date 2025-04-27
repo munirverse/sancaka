@@ -44,6 +44,8 @@ export async function GET() {
         instances.name,
         instances.status,
         instances.uptime,
+        instances.interval,
+        instances.updated_at as updatedat,
         instances.response_time AS responseTime,
         JSON_AGG(
           CASE WHEN h.online IS NOT false THEN 1 ELSE 0 END ORDER BY h.created_at DESC

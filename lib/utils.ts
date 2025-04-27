@@ -73,3 +73,13 @@ export const saveLocalStorage = (state: any) => {
     console.error("Error saving to local storage:", error);
   }
 };
+
+export const getIntervalFormat = (interval: number) => {
+  if (interval >= 3600) {
+    return `${interval / 3600} hour`;
+  } else if (interval > 60) {
+    return `${interval / 60} minutes`;
+  } else {
+    return `${interval} seconds`;
+  }
+};

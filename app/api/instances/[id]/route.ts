@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { instances, instanceStatusHistory } from "@/lib/db/schema";
 import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
-import { flushQueue } from "@/lib/pubsub/check-instance";
+import { flushQueue, publish } from "@/lib/pubsub/check-instance";
 
 const updateInstanceSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -145,6 +145,11 @@ export async function PUT(
       .update(instances)
       .set(updateInstance)
       .where(eq(instances.id, parseInt(id)));
+
+    // Flush the queue for the instance
+    await flushQueue(id);
+    // re-publish the instance to the queue
+    publish({ instanceId: id, interval: updateInstance.interval });
 
     const response = {
       ...updateInstance,

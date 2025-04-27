@@ -26,7 +26,7 @@ import { EditInstanceModal } from "@/components/edit-instance-modal";
 import { DeleteInstanceModal } from "@/components/delete-instance-modal";
 import type { Instance } from "@/types/instance";
 import { useGetInstancesQuery } from "@/lib/features/instance/instanceHook";
-import { debounced } from "@/lib/utils";
+import { debounced, getIntervalFormat } from "@/lib/utils";
 
 export function MonitoringInstancesTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,16 +90,6 @@ export function MonitoringInstancesTable() {
         return "bg-red-500";
       default:
         return "";
-    }
-  };
-
-  const getIntervalFormat = (interval: number) => {
-    if (interval >= 3600) {
-      return `${interval / 3600} hour`;
-    } else if (interval > 60) {
-      return `${interval / 60} minutes`;
-    } else {
-      return `${interval} seconds`;
     }
   };
 
