@@ -19,3 +19,9 @@ export interface AuthApiResponse {
     username: string;
   };
 }
+
+export interface AuthUpdatePayload {
+  username?: string;
+  password?: string;
+  currentPassword?: string;
+}

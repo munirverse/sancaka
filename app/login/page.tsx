@@ -50,14 +50,14 @@ export default function LoginPage() {
 
     try {
       await login({ username, password })
-        .then((res) => {
+        .then((res: any) => {
           if (res?.error) {
             throw new Error("");
           }
 
           response = (res.data?.data as AuthApiResponse) || null;
         })
-        .catch((err) => {
+        .catch((err: any) => {
           throw err;
         });
 

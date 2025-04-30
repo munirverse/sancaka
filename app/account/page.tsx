@@ -19,29 +19,58 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { AccountNavigation } from "@/components/account-navigation";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  useUpdateAccountMutation,
+  useAuthDispatch,
+} from "@/lib/features/auth/authHook";
 
 export default function AccountPage() {
   const router = useRouter();
 
-  const [isLoading, setIsLoading] = useState(false);
-
   // Profile state
   const [username, setUsername] = useState("");
-  const [profileSuccess, setProfileSuccess] = useState(false);
-  const [profileError, setProfileError] = useState("");
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {};
+  const [
+    updateAccount,
+    {
+      isError: isAccountError,
+      isSuccess: isAccountSuccess,
+      isLoading: isAccountLoading,
+    },
+  ] = useUpdateAccountMutation();
+
+  const [
+    updatePassword,
+    {
+      isError: isPasswordError,
+      isSuccess: isPasswordSuccess,
+      isLoading: isPasswordLoading,
+    },
+  ] = useUpdateAccountMutation();
+
+  const authDispatch = useAuthDispatch();
+
+  const handleAccountSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await updateAccount({ username }).catch((error) => {
+        throw error;
+      });
+      authDispatch.setUser({ username });
+    } catch (error) {
+      console.error("Error updating account:", error);
+    }
+  };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordSuccess(false);
     setPasswordError("");
 
     if (newPassword !== confirmPassword) {
@@ -52,6 +81,21 @@ export default function AccountPage() {
     if (newPassword.length < 6) {
       setPasswordError("Password must be at least 6 characters");
       return;
+    }
+
+    try {
+      await updatePassword({ password: newPassword, currentPassword })
+        .then((res) => {
+          if (res?.error) {
+            throw new Error("");
+          }
+        })
+        .catch((error) => {
+          throw error;
+        });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      setPasswordError("Failed to update password");
     }
   };
 
@@ -78,8 +122,8 @@ export default function AccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleProfileSubmit} className="space-y-4">
-                {profileSuccess && (
+              <form onSubmit={handleAccountSubmit} className="space-y-4">
+                {isAccountSuccess && (
                   <Alert className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription>
@@ -88,7 +132,7 @@ export default function AccountPage() {
                   </Alert>
                 )}
 
-                {profileError && (
+                {isAccountError && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
@@ -107,8 +151,8 @@ export default function AccountPage() {
                   />
                 </div>
 
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Saving..." : "Save Changes"}
+                <Button type="submit" disabled={isAccountLoading}>
+                  {isAccountLoading ? "Saving..." : "Save Changes"}
                 </Button>
               </form>
             </CardContent>
@@ -120,7 +164,7 @@ export default function AccountPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                {passwordSuccess && (
+                {isPasswordSuccess && (
                   <Alert className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription>
@@ -129,7 +173,7 @@ export default function AccountPage() {
                   </Alert>
                 )}
 
-                {passwordError && (
+                {isPasswordError && (
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{passwordError}</AlertDescription>
@@ -171,8 +215,8 @@ export default function AccountPage() {
                   />
                 </div>
 
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Update Password"}
+                <Button type="submit" disabled={isPasswordLoading}>
+                  {isPasswordLoading ? "Updating..." : "Update Password"}
                 </Button>
               </form>
             </CardContent>

@@ -18,4 +18,8 @@ export const useAuthDispatch = () => {
 };
 
 // export all the hooks from the authApi
-export { useSignUpMutation, useLoginMutation } from "./authApi";
+export {
+  useSignUpMutation,
+  useLoginMutation,
+  useUpdateAccountMutation,
+} from "./authApi";
