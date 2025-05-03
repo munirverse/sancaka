@@ -9,6 +9,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useGetStatsQuery } from "@/lib/features/stats/statsHook";
 import { AccountNavigation } from "@/components/account-navigation";
 import { useAuthSelector } from "@/lib/features/auth/authHook";
+import { AddNotification } from "@/components/add-notification";
 
 export default function DashboardPage() {
   const { data: stats } = useGetStatsQuery("", {
@@ -34,6 +35,9 @@ export default function DashboardPage() {
             {isAuthenticated && (
               <TabsTrigger value="instances">Instances</TabsTrigger>
             )}
+            {isAuthenticated && (
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="uptime" className="space-y-6">
             <DashboardOverview overview={stats?.overview} />
@@ -43,6 +47,11 @@ export default function DashboardPage() {
             <TabsContent value="instances" className="space-y-6">
               <AddMonitoringInstance />
               <MonitoringInstancesTable />
+            </TabsContent>
+          )}
+          {isAuthenticated && (
+            <TabsContent value="notifications" className="space-y-6">
+              <AddNotification />
             </TabsContent>
           )}
         </Tabs>
