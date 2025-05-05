@@ -50,4 +50,6 @@ export const notifications = pgTable("notifications", {
   name: text("name").notNull(),
   type: notificationTypeEnum("type").notNull(),
   details: jsonb("details").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
