@@ -42,3 +42,9 @@ export interface NotificationApiResponse {
     list: NotificationData[];
   };
 }
+
+export interface NotificationPayload {
+  name: string;
+  type: NotificationType;
+  details: object;
+}

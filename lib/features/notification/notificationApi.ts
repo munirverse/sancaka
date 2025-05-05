@@ -1,5 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { NotificationApiResponse } from "@/types/notification";
+import {
+  NotificationApiResponse,
+  NotificationPayload,
+} from "@/types/notification";
 
 export const notificationApi = createApi({
   reducerPath: "notificationApi",
@@ -14,14 +17,16 @@ export const notificationApi = createApi({
       providesTags: ["Notifications"],
       transformResponse: (response: NotificationApiResponse) => response.data,
     }),
-    addNotification: builder.mutation<any, any>({
-      query: (notification) => ({
-        url: "/notifications",
-        method: "POST",
-        body: notification,
-      }),
-      invalidatesTags: ["Notifications"],
-    }),
+    addNotification: builder.mutation<NotificationPayload, NotificationPayload>(
+      {
+        query: (notification) => ({
+          url: "/notifications",
+          method: "POST",
+          body: notification,
+        }),
+        invalidatesTags: ["Notifications"],
+      }
+    ),
   }),
 });
 

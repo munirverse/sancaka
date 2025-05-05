@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema";
-import { count, ilike } from "drizzle-orm";
+import { count, ilike, desc } from "drizzle-orm";
 
 const createNotificationSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     const listNotifications = await notificationsQuery
       .limit(parseInt(limit))
       .offset(offset)
-      .orderBy(notifications.updatedAt);
+      .orderBy(desc(notifications.updatedAt));
 
     const totalNotifications = await db
       .select({ count: count() })

@@ -23,12 +23,13 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import type { Notification, NotificationType } from "@/types/notification";
+import type { NotificationType } from "@/types/notification";
+import { useAddNotificationMutation } from "@/lib/features/notification/notificationApi";
 
 // Base schema for all notification types
 const baseSchema = z.object({
   name: z.string().min(1, "Notification name is required"),
-  type: z.enum(["telegram", "slack", "whatsapp", "email", "webhook"] as const),
+  type: z.enum(["telegram", "slack"] as const),
   enabled: z.boolean().default(true),
 });
 
@@ -42,7 +43,7 @@ const telegramSchema = baseSchema.extend({
 const slackSchema = baseSchema.extend({
   type: z.literal("slack"),
   webhookUrl: z.string().url("Must be a valid URL"),
-  channel: z.string().optional(),
+  channelName: z.string().optional(),
 });
 
 // Combined schema with discriminated union
@@ -54,6 +55,8 @@ const notificationSchema = z.discriminatedUnion("type", [
 type NotificationFormValues = z.infer<typeof notificationSchema>;
 
 export function AddNotification() {
+  const [addNotification] = useAddNotificationMutation();
+
   const [notificationType, setNotificationType] = useState<
     NotificationType | ""
   >("");
@@ -76,13 +79,38 @@ export function AddNotification() {
       form.setValue("chatId", "");
     } else if (value === "slack") {
       form.setValue("webhookUrl", "");
-      form.setValue("channel", "");
+      form.setValue("channelName", "");
     }
   };
 
-  const onSubmit = (data: NotificationFormValues) => {
-    // @ts-ignore
-    onAddNotification(data);
+  const onSubmit = async (data: NotificationFormValues) => {
+    try {
+      let details = {};
+
+      if (data.type === "telegram") {
+        details = {
+          botToken: data.botToken,
+          chatId: data.chatId,
+        };
+      } else if (data.type === "slack") {
+        details = {
+          webhookUrl: data.webhookUrl,
+          channelName: data?.channelName,
+        };
+      }
+
+      const notificationPayload = {
+        name: data.name,
+        type: data.type,
+        details,
+      };
+      await addNotification(notificationPayload).catch((error) => {
+        throw error;
+      });
+    } catch (error) {
+      console.error("Error add notification:", error);
+    }
+
     form.reset();
     setNotificationType("");
   };
@@ -205,7 +233,7 @@ export function AddNotification() {
 
                 <FormField
                   control={form.control}
-                  name="channel"
+                  name="channelName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Channel (Optional)</FormLabel>
