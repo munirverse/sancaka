@@ -21,3 +21,24 @@ export interface SlackNotification extends BaseNotification {
 }
 
 export type Notification = TelegramNotification | SlackNotification;
+
+export interface NotificationData {
+  id: number;
+  name: string;
+  type: NotificationType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationApiResponse {
+  message: string;
+  data: {
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+    data: NotificationData[];
+  };
+}
