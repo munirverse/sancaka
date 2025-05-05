@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema";
+import { count, ilike } from "drizzle-orm";
 
 const createNotificationSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -26,6 +27,44 @@ const createNotificationSchema = z.object({
 // GET /api/notifications
 export async function GET(request: NextRequest) {
   try {
+    const query = request.nextUrl.searchParams;
+    const limit = query.get("limit") || "10";
+    const page = query.get("page") || "1";
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const search = query.get("q") || "";
+
+    const notificationsQuery = db.select().from(notifications);
+
+    if (search) {
+      notificationsQuery.where(ilike(notifications.name, `%${search}%`));
+    }
+
+    const listNotifications = await notificationsQuery
+      .limit(parseInt(limit))
+      .offset(offset)
+      .orderBy(notifications.updatedAt);
+
+    const totalNotifications = await db
+      .select({ count: count() })
+      .from(notifications);
+
+    const total = totalNotifications[0].count;
+    const totalPages = Math.ceil(total / parseInt(limit));
+
+    const response = {
+      message: "Notifications fetched successfully",
+      data: {
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages,
+        },
+        list: listNotifications,
+      },
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Failed to fetch notifications:", error);
     return NextResponse.json(
