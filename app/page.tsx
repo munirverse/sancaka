@@ -10,6 +10,7 @@ import { useGetStatsQuery } from "@/lib/features/stats/statsHook";
 import { AccountNavigation } from "@/components/account-navigation";
 import { useAuthSelector } from "@/lib/features/auth/authHook";
 import { AddNotification } from "@/components/add-notification";
+import { NotificationsTable } from "@/components/notifications-table";
 
 export default function DashboardPage() {
   const { data: stats } = useGetStatsQuery("", {
@@ -52,6 +53,7 @@ export default function DashboardPage() {
           {isAuthenticated && (
             <TabsContent value="notifications" className="space-y-6">
               <AddNotification />
+              <NotificationsTable />
             </TabsContent>
           )}
         </Tabs>

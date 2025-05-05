@@ -2,6 +2,7 @@ import { configureStore, StateFromReducersMapObject } from "@reduxjs/toolkit";
 import { instanceApi } from "./features/instance/instanceApi";
 import { statsApi } from "./features/stats/statsApi";
 import { authApi } from "./features/auth/authApi";
+import { notificationApi } from "./features/notification/notificationApi";
 import authReducer from "./features/auth/authSlice";
 import { loadLocalStorage } from "@/lib/utils";
 
@@ -9,6 +10,7 @@ const reducer = {
   [instanceApi.reducerPath]: instanceApi.reducer,
   [statsApi.reducerPath]: statsApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
+  [notificationApi.reducerPath]: notificationApi.reducer,
   auth: authReducer,
 };
 
@@ -23,7 +25,8 @@ export const makeStore = () => {
       getDefaultMiddleware().concat(
         instanceApi.middleware,
         statsApi.middleware,
-        authApi.middleware
+        authApi.middleware,
+        notificationApi.middleware
       ),
     devTools: true,
     preloadedState,

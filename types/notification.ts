@@ -39,6 +39,6 @@ export interface NotificationApiResponse {
       limit: number;
       totalPages: number;
     };
-    data: NotificationData[];
+    list: NotificationData[];
   };
 }
