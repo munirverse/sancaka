@@ -24,6 +24,10 @@ export const instances = pgTable("instances", {
   interval: integer().notNull(), // in seconds
   responseTime: text("response_time"),
   uptime: decimal("uptime", { precision: 5, scale: 2 }),
+  notificationId: integer("notification_id").references(
+    () => notifications.id,
+    { onDelete: "set null" }
+  ),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
