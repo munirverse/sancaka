@@ -32,8 +32,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { NotificationType } from "@/types/notification";
-import { useGetNotificationsQuery } from "@/lib/features/notification/notificationApi";
+import type { NotificationType, NotificationData } from "@/types/notification";
+import {
+  useGetNotificationsQuery,
+  useDeleteNotificationMutation,
+} from "@/lib/features/notification/notificationHook";
 import qs from "querystring";
 import { debounced } from "@/lib/utils";
 
@@ -42,10 +45,14 @@ export function NotificationsTable() {
   const [searchTermQuery, setSearchTermQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedNotification, setSelectedNotification] =
+    useState<NotificationData | null>(null);
 
   const { data } = useGetNotificationsQuery(
     qs.stringify({ page: currentPage, limit: 5, q: searchTermQuery })
   );
+
+  const [deleteNotification] = useDeleteNotificationMutation();
 
   const handleSearchTermChange = (value: string) => {
     setSearchTerm(value);
@@ -67,6 +74,26 @@ export function NotificationsTable() {
         {type.charAt(0).toUpperCase() + type.slice(1)}
       </Badge>
     );
+  };
+
+  const handleDeleteClick = (notification: NotificationData) => {
+    setSelectedNotification(notification);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async (id: number) => {
+    if (id) {
+      await deleteNotification(id)
+        .then(() => {
+          setDeleteDialogOpen(false);
+          setSelectedNotification(null);
+        })
+        .catch((error: any) => {
+          console.error("Error deleting notification:", error);
+          setDeleteDialogOpen(false);
+          setSelectedNotification(null);
+        });
+    }
   };
 
   return (
@@ -109,7 +136,11 @@ export function NotificationsTable() {
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
                       </Button>
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteClick(notification)}
+                      >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
                       </Button>
@@ -183,13 +214,17 @@ export function NotificationsTable() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete the notification channel{" "}
+              {selectedNotification?.name}
               <span className="font-semibold"></span>. This action cannot be
               undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction
+              onClick={() => handleDeleteConfirm(selectedNotification?.id || 0)}
+              className="bg-red-500 hover:bg-red-600"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
