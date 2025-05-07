@@ -1,5 +1,3 @@
-import type { Queue } from "bull";
-
 export interface Instance {
   id: string;
   name: string;
@@ -10,6 +8,7 @@ export interface Instance {
   uptime: string;
   createdAt: string;
   updatedAt: string;
+  notificationId: string;
 }
 
 export interface InstanceResponse {

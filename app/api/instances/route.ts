@@ -14,6 +14,7 @@ const createInstanceSchema = z.object({
     .string()
     .min(1, "Interval is required")
     .transform((val) => parseInt(val)),
+  notificationId: z.string().optional(),
 });
 
 // GET /api/instances
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, url, interval } = validationResult.data;
+    const { name, url, interval, notificationId } = validationResult.data;
 
     let status: "online" | "offline" = "offline";
 
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
       url,
       status,
       interval,
+      notificationId: parseInt(notificationId || "") || null,
       responseTime: `${Math.round(performance.now() - instanceStartTime)}ms`,
       uptime: status === "online" ? "100" : "0",
       createdAt: new Date(),

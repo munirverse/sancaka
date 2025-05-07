@@ -15,17 +15,26 @@ import {
 } from "@/components/ui/select";
 import { SuccessAddInstanceModal } from "@/components/success-add-instance-modal";
 import { useAddInstanceMutation } from "@/lib/features/instance/instanceHook";
+import { useGetNotificationsQuery } from "@/lib/features/notification/notificationHook";
+import qs from "querystring";
 
 export function AddMonitoringInstance() {
   const [instanceName, setInstanceName] = useState("");
   const [url, setUrl] = useState("");
   const [interval, setInterval] = useState("300");
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [notificationId, setNotificationId] = useState<string | undefined>(
+    undefined
+  );
   const [addedInstance, setAddedInstance] = useState<{
     name: string;
     url: string;
   } | null>(null);
   const [addInstance, { error }] = useAddInstanceMutation();
+
+  const { data: notifications } = useGetNotificationsQuery(
+    qs.stringify({ page: 1, limit: 100 })
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +44,7 @@ export function AddMonitoringInstance() {
         name: instanceName,
         url,
         interval,
+        notificationId,
       });
 
       if (error) {
@@ -64,7 +74,7 @@ export function AddMonitoringInstance() {
             Add New Monitoring Instance
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
                 <label
                   htmlFor="instance-name"
@@ -113,6 +123,33 @@ export function AddMonitoringInstance() {
                     <SelectItem value="900">Every 15 minutes</SelectItem>
                     <SelectItem value="1800">Every 30 minutes</SelectItem>
                     <SelectItem value="3600">Every 1 hour</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="notification-id"
+                  className="block text-sm font-medium mb-2"
+                >
+                  Notification
+                </label>
+                <Select
+                  value={notificationId}
+                  onValueChange={setNotificationId}
+                >
+                  <SelectTrigger id="notification-id">
+                    <SelectValue placeholder="Select notification channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(notifications?.list?.length || 0) > 0 &&
+                      notifications!.list.map((notification) => (
+                        <SelectItem
+                          key={notification.id}
+                          value={notification.id.toString()}
+                        >
+                          {notification.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
