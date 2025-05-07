@@ -21,12 +21,15 @@ import {
 } from "@/components/ui/select";
 import type { Instance } from "@/types/instance";
 import { useUpdateInstanceMutation } from "@/lib/features/instance/instanceHook";
+import { NotificationData } from "@/types/notification";
 
 interface EditInstanceModalProps {
   instance: Instance | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onFinish: () => void;
+  notification?: string | undefined;
+  notificationList?: NotificationData[];
 }
 
 export function EditInstanceModal({
@@ -34,6 +37,8 @@ export function EditInstanceModal({
   open,
   onOpenChange,
   onFinish,
+  notification,
+  notificationList,
 }: EditInstanceModalProps) {
   const [formData, setFormData] = useState<Partial<Instance>>({
     name: "",
@@ -54,9 +59,10 @@ export function EditInstanceModal({
         interval: instance.interval,
         responseTime: instance.responseTime,
         uptime: instance.uptime,
+        notificationId: notification,
       });
     }
-  }, [instance]);
+  }, [instance, notification]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +137,32 @@ export function EditInstanceModal({
                 <SelectItem value="900">Every 15 minutes</SelectItem>
                 <SelectItem value="1800">Every 30 minutes</SelectItem>
                 <SelectItem value="3600">Every 1 hour</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid w-full items-center gap-2">
+            <label
+              htmlFor="edit-notification-id"
+              className="text-sm font-medium"
+            >
+              Notification
+            </label>
+            <Select
+              value={notification}
+              onValueChange={(value) =>
+                setFormData({ ...formData, notificationId: value })
+              }
+            >
+              <SelectTrigger id="notification-id">
+                <SelectValue placeholder="Select notification channel" />
+              </SelectTrigger>
+              <SelectContent>
+                {(notificationList?.length || 0) > 0 &&
+                  notificationList!.map((item) => (
+                    <SelectItem key={item.id} value={item.id.toString()}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

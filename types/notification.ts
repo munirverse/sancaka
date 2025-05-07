@@ -26,6 +26,7 @@ export interface NotificationData {
   id: number;
   name: string;
   type: NotificationType;
+  details: object;
   createdAt: string;
   updatedAt: string;
 }

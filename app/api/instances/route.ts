@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { instances, instanceStatusHistory } from "@/lib/db/schema";
-import { desc, count, like } from "drizzle-orm";
+import {
+  instances,
+  instanceStatusHistory,
+  notifications,
+} from "@/lib/db/schema";
+import { desc, count, ilike, eq } from "drizzle-orm";
 import { publish } from "@/lib/pubsub/check-instance";
 
 // Create a Zod schema for validation
@@ -25,10 +29,13 @@ export async function GET(request: NextRequest) {
   const offset = (parseInt(page) - 1) * parseInt(limit);
   const search = query.get("q") || "";
 
-  const instancesQuery = db.select().from(instances);
+  const instancesQuery = db
+    .select()
+    .from(instances)
+    .leftJoin(notifications, eq(instances.notificationId, notifications.id));
 
   if (search) {
-    instancesQuery.where(like(instances.name, `%${search}%`));
+    instancesQuery.where(ilike(instances.name, `%${search}%`));
   }
 
   const listInstances = await instancesQuery

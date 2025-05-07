@@ -12,6 +12,7 @@ const updateInstanceSchema = z.object({
     .string()
     .min(1, "Interval is required")
     .transform((val) => parseInt(val)),
+  notificationId: z.string().optional(),
 });
 
 // DELETE /api/instances/:id
@@ -96,7 +97,7 @@ export async function PUT(
       );
     }
 
-    const { name, url, interval } = validationResult.data;
+    const { name, url, interval, notificationId } = validationResult.data;
 
     let status: "online" | "offline" = "offline";
 
@@ -136,6 +137,7 @@ export async function PUT(
       url,
       interval,
       status,
+      notificationId: parseInt(notificationId || "") || null,
       responseTime: `${Math.round(performance.now() - instanceStartTime)}ms`,
       uptime: ((onlineHistoryCount / totalHistoryCount) * 100).toFixed(2),
       updatedAt: new Date(),

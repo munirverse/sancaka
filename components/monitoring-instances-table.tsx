@@ -21,12 +21,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Edit, Trash2, ArrowUpDown, Search } from "lucide-react";
+import { Edit, Trash2, Search } from "lucide-react";
 import { EditInstanceModal } from "@/components/edit-instance-modal";
 import { DeleteInstanceModal } from "@/components/delete-instance-modal";
 import type { Instance } from "@/types/instance";
 import { useGetInstancesQuery } from "@/lib/features/instance/instanceHook";
 import { debounced, getIntervalFormat } from "@/lib/utils";
+import { useGetNotificationsQuery } from "@/lib/features/notification/notificationHook";
 
 export function MonitoringInstancesTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,9 +39,13 @@ export function MonitoringInstancesTable() {
   const [selectedInstance, setSelectedInstance] = useState<Instance | null>(
     null
   );
+  const [selectedNotification, setSelectedNotification] = useState<
+    string | undefined
+  >(undefined);
 
-  const handleEdit = (instance: Instance) => {
+  const handleEdit = (instance: Instance, notificationId: string) => {
     setSelectedInstance(instance);
+    setSelectedNotification(notificationId);
     setEditModalOpen(true);
   };
 
@@ -97,6 +102,10 @@ export function MonitoringInstancesTable() {
     qs.stringify({ page: currentPage, limit: 5, q: searchTermQuery })
   );
 
+  const { data: notificationData } = useGetNotificationsQuery(
+    qs.stringify({ page: 1, limit: 100 })
+  );
+
   return (
     <>
       <Card>
@@ -124,56 +133,66 @@ export function MonitoringInstancesTable() {
                   <TableHead>Interval</TableHead>
                   <TableHead>Response Time</TableHead>
                   <TableHead>Uptime %</TableHead>
+                  <TableHead>Notification Channel</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data?.list && data?.list?.length > 0 ? (
-                  data.list.map((instance) => (
-                    <TableRow key={instance.id}>
-                      <TableCell className="font-medium">
-                        {instance.name}
-                      </TableCell>
-                      <TableCell>{instance.url}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <div
-                            className={`h-2 w-2 rounded-full ${getStatusDot(
-                              instance.status
-                            )} mr-2`}
-                          />
-                          <span className={getStatusColor(instance.status)}>
-                            {instance.status}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getIntervalFormat(Number(instance.interval))}
-                      </TableCell>
-                      <TableCell>{instance.responseTime || "-"}</TableCell>
-                      <TableCell>{instance.uptime}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(instance)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(instance)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  data.list.map(
+                    ({ instances: instance, notifications: notification }) => (
+                      <TableRow key={instance.id}>
+                        <TableCell className="font-medium">
+                          {instance.name}
+                        </TableCell>
+                        <TableCell>{instance.url}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <div
+                              className={`h-2 w-2 rounded-full ${getStatusDot(
+                                instance.status
+                              )} mr-2`}
+                            />
+                            <span className={getStatusColor(instance.status)}>
+                              {instance.status}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getIntervalFormat(Number(instance.interval))}
+                        </TableCell>
+                        <TableCell>{instance.responseTime || "-"}</TableCell>
+                        <TableCell>{instance.uptime}</TableCell>
+                        <TableCell>
+                          {notification
+                            ? notification.name
+                            : "No notification channel"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                handleEdit(instance, notification.id.toString())
+                              }
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(instance)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )
                 ) : (
                   <TableRow>
                     <TableCell
@@ -241,6 +260,8 @@ export function MonitoringInstancesTable() {
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
         onFinish={handleOnFinishEdit}
+        notification={selectedNotification}
+        notificationList={notificationData?.list}
       />
 
       {/* Delete Modal */}

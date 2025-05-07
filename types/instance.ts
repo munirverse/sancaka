@@ -1,3 +1,5 @@
+import { NotificationData } from "./notification";
+
 export interface Instance {
   id: string;
   name: string;
@@ -20,8 +22,13 @@ export interface InstanceResponse {
       limit: number;
       totalPages: number;
     };
-    list: Instance[];
+    list: InstanceLeftJoinNotificationList[];
   };
+}
+
+export interface InstanceLeftJoinNotificationList {
+  instances: Instance;
+  notifications: NotificationData;
 }
 
 export interface CheckInstanceQueueData {
