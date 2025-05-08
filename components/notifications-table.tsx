@@ -39,6 +39,7 @@ import {
 } from "@/lib/features/notification/notificationHook";
 import qs from "querystring";
 import { debounced } from "@/lib/utils";
+import { EditNotificationModal } from "./edit-notification-modal";
 
 export function NotificationsTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +48,9 @@ export function NotificationsTable() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] =
     useState<NotificationData | null>(null);
+
+  // edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const { data } = useGetNotificationsQuery(
     qs.stringify({ page: currentPage, limit: 5, q: searchTermQuery })
@@ -79,6 +83,11 @@ export function NotificationsTable() {
   const handleDeleteClick = (notification: NotificationData) => {
     setSelectedNotification(notification);
     setDeleteDialogOpen(true);
+  };
+
+  const handleEditClick = (notification: NotificationData) => {
+    setSelectedNotification(notification);
+    setEditModalOpen(true);
   };
 
   const handleDeleteConfirm = async (id: number) => {
@@ -132,7 +141,11 @@ export function NotificationsTable() {
                       {getNotificationTypeBadge(notification.type)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditClick(notification)}
+                      >
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
                       </Button>
@@ -230,6 +243,13 @@ export function NotificationsTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Notification Modal */}
+      <EditNotificationModal
+        notification={selectedNotification}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+      />
     </Card>
   );
 }

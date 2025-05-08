@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     const newNotification = {
       name,
       type,
-      details: JSON.stringify(details),
+      details,
     };
 
     const [inserted] = await db

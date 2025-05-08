@@ -34,6 +34,17 @@ export const notificationApi = createApi({
       }),
       invalidatesTags: ["Notifications"],
     }),
+    updateNotification: builder.mutation<
+      any,
+      { id: number; data: NotificationPayload }
+    >({
+      query: ({ id, data }) => ({
+        url: `/notifications/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
   }),
 });
 
@@ -41,4 +52,5 @@ export const {
   useGetNotificationsQuery,
   useAddNotificationMutation,
   useDeleteNotificationMutation,
+  useUpdateNotificationMutation,
 } = notificationApi;
