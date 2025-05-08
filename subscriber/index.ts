@@ -2,8 +2,49 @@ import Queue, { Job } from "bull";
 import { config } from "../pubsub.config";
 import type { CheckInstanceQueueData } from "@/types/instance";
 import { db } from "@/lib/db";
-import { instances, instanceStatusHistory } from "@/lib/db/schema";
+import {
+  instances,
+  instanceStatusHistory,
+  notifications,
+} from "@/lib/db/schema";
 import { eq, count, and } from "drizzle-orm";
+
+const createTemplateMessage = (instanceName: string) => {
+  return `
+    Your instance *${instanceName}* is down. Please check the instance and restart it if necessary.
+  `;
+};
+
+const sendTelegramMessage = async (
+  instanceName: string,
+  token: string,
+  chatId: string
+) => {
+  if (token && chatId) {
+    const message = createTemplateMessage(instanceName);
+
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+    const body = {
+      chat_id: chatId,
+      text: message,
+      parse_mode: "Markdown",
+    };
+
+    try {
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      debugger;
+      console.error("Error sending message to Telegram:", error);
+    }
+  }
+};
 
 const checkInstanceProcessing = async (job: Job) => {
   const instance = job.data as CheckInstanceQueueData;
@@ -11,6 +52,7 @@ const checkInstanceProcessing = async (job: Job) => {
   const [existingInstance] = await db
     .select()
     .from(instances)
+    .leftJoin(notifications, eq(instances.notificationId, notifications.id))
     .where(eq(instances.id, parseInt(instance.instanceId)));
 
   if (!existingInstance) {
@@ -27,12 +69,27 @@ const checkInstanceProcessing = async (job: Job) => {
   let status: "offline" | "online" = "offline";
 
   try {
-    const response = await fetch(`${existingInstance.url}`);
+    const response = await fetch(`${existingInstance.instances.url}`).catch(
+      (error) => {
+        throw error;
+      }
+    );
 
     if (response.status === 200 && response.ok) {
       status = "online";
+    } else {
+      throw new Error("Instance is offline");
     }
-  } catch (error) {}
+  } catch (error) {
+    // send notification to telegram
+    if (existingInstance.notifications?.type === "telegram") {
+      await sendTelegramMessage(
+        existingInstance.instances.name,
+        (existingInstance.notifications?.details as any)?.botToken,
+        (existingInstance.notifications?.details as any)?.chatId
+      );
+    }
+  }
 
   await db.insert(instanceStatusHistory).values({
     instanceId: parseInt(instance.instanceId),
@@ -63,7 +120,7 @@ const checkInstanceProcessing = async (job: Job) => {
 
   console.log(
     "Updated instance",
-    existingInstance.name,
+    existingInstance.instances.name,
     "with id",
     instance.instanceId,
     "to",
@@ -73,7 +130,7 @@ const checkInstanceProcessing = async (job: Job) => {
   // republish the instance to the queue
   job.queue.add(
     { instanceId: instance.instanceId },
-    { delay: existingInstance.interval * 1000 }
+    { delay: existingInstance.instances.interval * 1000 }
   );
 };
 
