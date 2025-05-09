@@ -83,3 +83,64 @@ export const getIntervalFormat = (interval: number) => {
     return `${interval} seconds`;
   }
 };
+
+export const createTemplateMessage = (instanceName: string) => {
+  return `
+    Your instance *${instanceName}* is down. Please check the instance and restart it if necessary.
+  `;
+};
+
+export const sendTelegramMessage = async (
+  instanceName: string,
+  token: string,
+  chatId: string
+) => {
+  if (token && chatId) {
+    const message = createTemplateMessage(instanceName);
+
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+    const body = {
+      chat_id: chatId,
+      text: message,
+      parse_mode: "Markdown",
+    };
+
+    try {
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      console.error("Error sending message to Telegram:", error);
+    }
+  }
+};
+
+export const sendSlackMessage = async (
+  instanceName: string,
+  webhookUrl: string
+) => {
+  if (webhookUrl) {
+    const message = createTemplateMessage(instanceName);
+
+    const body = {
+      text: message,
+    };
+
+    try {
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      console.error("Error sending message to Slack:", error);
+    }
+  }
+};

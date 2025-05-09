@@ -8,43 +8,7 @@ import {
   notifications,
 } from "@/lib/db/schema";
 import { eq, count, and } from "drizzle-orm";
-
-const createTemplateMessage = (instanceName: string) => {
-  return `
-    Your instance *${instanceName}* is down. Please check the instance and restart it if necessary.
-  `;
-};
-
-const sendTelegramMessage = async (
-  instanceName: string,
-  token: string,
-  chatId: string
-) => {
-  if (token && chatId) {
-    const message = createTemplateMessage(instanceName);
-
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-
-    const body = {
-      chat_id: chatId,
-      text: message,
-      parse_mode: "Markdown",
-    };
-
-    try {
-      await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-    } catch (error) {
-      debugger;
-      console.error("Error sending message to Telegram:", error);
-    }
-  }
-};
+import { sendTelegramMessage, sendSlackMessage } from "@/lib/utils";
 
 const checkInstanceProcessing = async (job: Job) => {
   const instance = job.data as CheckInstanceQueueData;
@@ -81,12 +45,18 @@ const checkInstanceProcessing = async (job: Job) => {
       throw new Error("Instance is offline");
     }
   } catch (error) {
-    // send notification to telegram
     if (existingInstance.notifications?.type === "telegram") {
+      // send notification to telegram
       await sendTelegramMessage(
         existingInstance.instances.name,
         (existingInstance.notifications?.details as any)?.botToken,
         (existingInstance.notifications?.details as any)?.chatId
+      );
+    } else if (existingInstance.notifications?.type === "slack") {
+      // send notification to slack
+      await sendSlackMessage(
+        existingInstance.instances.name,
+        (existingInstance.notifications?.details as any)?.webhookUrl
       );
     }
   }
