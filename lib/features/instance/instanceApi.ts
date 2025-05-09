@@ -1,10 +1,20 @@
 import { Instance, InstanceResponse } from "@/types/instance";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { statsApi } from "../stats/statsApi";
+import type { RootState } from "@/lib/store";
 
 export const instanceApi = createApi({
   reducerPath: "instanceApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: "/api",
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ["Instances"],
   endpoints: (builder) => ({
     getInstances: builder.query<InstanceResponse["data"], string>({

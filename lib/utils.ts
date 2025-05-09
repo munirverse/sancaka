@@ -39,8 +39,7 @@ export async function verifyAuthToken(token: string) {
     );
     return payload;
   } catch (error) {
-    console.error("JWT verification failed:", error);
-    return null;
+    throw new Error("Invalid token");
   }
 }
 

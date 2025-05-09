@@ -60,10 +60,17 @@ export default function AccountPage() {
     e.preventDefault();
 
     try {
-      await updateAccount({ username }).catch((error) => {
-        throw error;
-      });
-      authDispatch.setUser({ username });
+      await updateAccount({ username })
+        .catch((error) => {
+          throw error;
+        })
+        .then((res) => {
+          if (res?.error) {
+            throw new Error("");
+          }
+
+          authDispatch.setUser({ username });
+        });
     } catch (error) {
       console.error("Error updating account:", error);
     }

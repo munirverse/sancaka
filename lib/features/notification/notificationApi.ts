@@ -3,11 +3,21 @@ import {
   NotificationApiResponse,
   NotificationPayload,
 } from "@/types/notification";
+import type { RootState } from "@/lib/store";
 
 export const notificationApi = createApi({
   reducerPath: "notificationApi",
   tagTypes: ["Notifications"],
-  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: "/api",
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     getNotifications: builder.query<NotificationApiResponse["data"], string>({
       query: (params) => ({

@@ -20,11 +20,20 @@ export const authApi = createApi({
       }),
     }),
     updateAccount: builder.mutation<any, AuthUpdatePayload>({
-      query: (payload) => ({
-        url: "/auth",
-        method: "PUT",
-        body: payload,
-      }),
+      async queryFn(payload, { getState }, _, baseQuery) {
+        const token = (getState() as any).auth.token;
+
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const response = await baseQuery({
+          url: "/auth",
+          method: "PUT",
+          body: payload,
+          headers,
+        });
+
+        return response;
+      },
     }),
   }),
 });
