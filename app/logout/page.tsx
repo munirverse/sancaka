@@ -3,15 +3,20 @@
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuthDispatch } from "@/lib/features/auth/authHook";
+import { useLogoutMutation } from "@/lib/features/auth/authHook";
 
 export default function LogoutPage() {
   const router = useRouter();
   const authDispatch = useAuthDispatch();
+  const [logout] = useLogoutMutation();
 
-  setTimeout(() => {
+  setTimeout(async () => {
     authDispatch.setIsAuthenticated(false);
     authDispatch.setUser(null);
     authDispatch.setToken(null);
+
+    await logout();
+
     router.push("/");
   }, 500);
 

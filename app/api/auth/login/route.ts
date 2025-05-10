@@ -5,6 +5,7 @@ import { users } from "@/lib/db/schema";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { createAuthToken } from "@/lib/utils";
+import { cookies } from "next/headers";
 
 const loginUserSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -51,6 +52,10 @@ export async function POST(request: NextRequest) {
     };
 
     const token = await createAuthToken(user);
+
+    const sessionCookie = await cookies();
+
+    sessionCookie.set("LOGGED_IN", "true", { httpOnly: true, path: "/" });
 
     return NextResponse.json(
       {

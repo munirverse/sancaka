@@ -22,4 +22,5 @@ export {
   useSignUpMutation,
   useLoginMutation,
   useUpdateAccountMutation,
+  useLogoutMutation,
 } from "./authApi";
