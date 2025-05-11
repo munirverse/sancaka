@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
     }
   } else if (!pathname.startsWith("/api")) {
     // Handle non-API routes
-    if (pathname === "/signup") {
+    if (pathname === "/signup" || pathname === "/login") {
       if (isLoggedIn) return NextResponse.redirect("/");
       return NextResponse.next();
     }
