@@ -66,7 +66,7 @@ export default function SignupPage() {
         });
 
       setIsLoading(false);
-      router.push("/");
+      router.push("/login");
     } catch (err) {
       handleError((err as any).message);
     }
