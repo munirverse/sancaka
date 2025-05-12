@@ -13,11 +13,13 @@ services:
     volumes:
       - ./volumes/sancaka-db:/var/lib/postgresql/data
     ports:
-      - 5400:5432
+      - 5432:5432
     environment:
       POSTGRES_USER: sancaka
       POSTGRES_PASSWORD: sancakapass1234
       POSTGRES_DB: sancaka
+    networks:
+      - sancaka-network
 
   redis:
     container_name: sancaka-redis
@@ -35,6 +37,19 @@ services:
     container_name: sancaka-subscriber
     depends_on:
       - redis
+    networks:
+      - sancaka-network
+
+  app: 
+    build: 
+      context: .
+    container_name: sancaka-app 
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+      - redis 
+      - subscriber
     networks:
       - sancaka-network
 
