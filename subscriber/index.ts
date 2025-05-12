@@ -1,14 +1,14 @@
 import Queue, { Job } from "bull";
 import { config } from "../pubsub.config";
-import type { CheckInstanceQueueData } from "@/types/instance";
-import { db } from "@/lib/db";
+import type { CheckInstanceQueueData } from "../types/instance";
+import { db } from "../lib/db";
 import {
   instances,
   instanceStatusHistory,
   notifications,
-} from "@/lib/db/schema";
+} from "../lib/db/schema";
 import { eq, count, and } from "drizzle-orm";
-import { sendTelegramMessage, sendSlackMessage } from "@/lib/utils";
+import { sendTelegramMessage, sendSlackMessage } from "../lib/utils";
 
 const checkInstanceProcessing = async (job: Job) => {
   const instance = job.data as CheckInstanceQueueData;
